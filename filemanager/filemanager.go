@@ -12,8 +12,14 @@ var ErrFileReaderFailed = errors.New("unable to read file contents")
 var ErrFileCreateFailed = errors.New("unable to create file")
 var ErrJSONEncodeFailed = errors.New("unable to convert data to JSON")
 
-func ReadLines(path string) ([]string, error) {
-	file, err := os.Open(path)
+type FileManager struct {
+	InputFilePath  string `json:"inputFilePath"`
+	OutputFilePath string `json:"outputFilePath"`
+}
+
+
+func (fm FileManager) ReadLines() ([]string, error) {
+	file, err := os.Open(fm.InputFilePath)
 	if err != nil {
 		return nil, ErrFileOpenFailed
 	}
@@ -37,8 +43,8 @@ func ReadLines(path string) ([]string, error) {
 	return lines, nil
 }
 
-func WriteJSON(path string, data any) error {
-	file, err := os.Create(path)
+func (fm FileManager) WriteResult(data any) error {
+	file, err := os.Create(fm.OutputFilePath)
 
 	if err != nil {
 		return ErrFileCreateFailed
@@ -54,4 +60,11 @@ func WriteJSON(path string, data any) error {
 	file.Close()
 
 	return nil
+}
+
+func New(inputPath, outputPath string) *FileManager {
+	return &FileManager{
+		InputFilePath:  inputPath,
+		OutputFilePath: outputPath,
+	}
 }
