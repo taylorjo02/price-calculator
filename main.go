@@ -13,6 +13,8 @@ func main() {
 	for _, taxRate := range taxRates {
 		fm := filemanager.New("prices.txt", fmt.Sprintf("result_%.0f.json", taxRate*100))
 		priceJob := prices.NewTaxIncludedPriceJob(fm, taxRate)
-		priceJob.Process()
+		err := priceJob.Process()
+		fmt.Println("unable to process job")
+		fmt.Println(err)
 	}
 }

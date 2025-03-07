@@ -2,20 +2,24 @@ package prices
 
 import (
 	"fmt"
+
 	"github.com/taylorjo02/price-calculator/conversion"
-	"github.com/taylorjo02/price-calculator/filemanager"
+	"github.com/taylorjo02/price-calculator/iomanager"
 )
 
 type TaxIncludedPriceJob struct {
-	IOManager         filemanager.FileManager `json:"ioManager"`
-	TaxRate           float64                 `json:"taxRate"`
-	InputPrices       []float64               `json:"inputPrices"`
-	TaxIncludedPrices map[string]string       `json:"taxIncludedPrices"`
+	IOManager         iomanager.IOManager `json:"ioManager"`
+	TaxRate           float64             `json:"taxRate"`
+	InputPrices       []float64           `json:"inputPrices"`
+	TaxIncludedPrices map[string]string   `json:"taxIncludedPrices"`
 }
 
-func (job *TaxIncludedPriceJob) Process() {
+func (job *TaxIncludedPriceJob) Process() error {
 
-	job.LoadPrices()
+	err := job.LoadPrices()
+	if err != nil {
+		return err
+	}
 
 	result := make(map[string]string)
 
@@ -26,36 +30,33 @@ func (job *TaxIncludedPriceJob) Process() {
 
 	job.TaxIncludedPrices = result
 
-	err := job.IOManager.WriteResult(job)
-	if err != nil {
-		fmt.Println(err)
-	}
+	return job.IOManager.WriteResult(job)
 
 }
 
-func NewTaxIncludedPriceJob(fm *filemanager.FileManager, taxRate float64) *TaxIncludedPriceJob {
+func NewTaxIncludedPriceJob(io iomanager.IOManager, taxRate float64) *TaxIncludedPriceJob {
 	return &TaxIncludedPriceJob{
-		IOManager: *fm,
+		IOManager:         io,
 		TaxRate:           taxRate,
 		InputPrices:       []float64{10, 20, 30},
 		TaxIncludedPrices: map[string]string{},
 	}
 }
 
-func (job *TaxIncludedPriceJob) LoadPrices() {
+func (job *TaxIncludedPriceJob) LoadPrices() error {
 	lines, err := job.IOManager.ReadLines()
 
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 
 	prices, err := conversion.StringsToFloats(lines)
 
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 
 	job.InputPrices = prices
+
+	return nil
 }
